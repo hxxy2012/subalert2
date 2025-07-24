@@ -9,7 +9,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * 系统设置模型
- * 
+ *
  * @property int $id
  * @property string $group
  * @property string $key
@@ -83,7 +83,7 @@ class SystemSetting extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         // 更新时清除缓存
         static::saved(function ($model) {
             static::clearSettingsCache();
@@ -117,7 +117,7 @@ class SystemSetting extends Model
             self::TYPE_BOOLEAN => $value ? '1' : '0',
             default => (string) $value,
         };
-        
+
         return $this;
     }
 
@@ -214,7 +214,7 @@ class SystemSetting extends Model
     public static function get($key, $default = null, $group = null)
     {
         $cacheKey = 'system_settings';
-        
+
         $settings = Cache::remember($cacheKey, 3600, function () {
             return static::all()->keyBy(function ($item) {
                 return $item->group . '.' . $item->key;
@@ -222,7 +222,7 @@ class SystemSetting extends Model
         });
 
         $fullKey = $group ? $group . '.' . $key : $key;
-        
+
         // 如果指定了分组但没找到，尝试不带分组的key
         if ($group && !$settings->has($fullKey)) {
             $setting = $settings->firstWhere('key', $key);
@@ -239,7 +239,7 @@ class SystemSetting extends Model
     public static function set($key, $value, $group = 'general')
     {
         $setting = static::where('group', $group)->where('key', $key)->first();
-        
+
         if ($setting) {
             $setting->setTypedValue($value);
             $setting->save();
@@ -264,7 +264,7 @@ class SystemSetting extends Model
     public static function getGroup($group)
     {
         $settings = static::byGroup($group)->get();
-        
+
         return $settings->mapWithKeys(function ($setting) {
             return [$setting->key => $setting->getTypedValue()];
         });
@@ -286,11 +286,11 @@ class SystemSetting extends Model
     public static function remove($key, $group = null)
     {
         $query = static::where('key', $key);
-        
+
         if ($group) {
             $query->where('group', $group);
         }
-        
+
         $query->delete();
         static::clearSettingsCache();
     }
@@ -321,15 +321,15 @@ class SystemSetting extends Model
         if (is_bool($value)) {
             return static::TYPE_BOOLEAN;
         }
-        
+
         if (is_numeric($value)) {
             return static::TYPE_NUMBER;
         }
-        
+
         if (is_array($value) || is_object($value)) {
             return static::TYPE_JSON;
         }
-        
+
         return static::TYPE_STRING;
     }
 }
